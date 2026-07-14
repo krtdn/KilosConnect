@@ -1,0 +1,13 @@
+/* Ensure the body and base html take up full height scopes */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* Clear default template margins if present */
+#root {
+  max-width: 100% !important;
+  text-align: left;
+}
