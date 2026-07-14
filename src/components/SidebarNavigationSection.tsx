@@ -24,8 +24,8 @@ const navItems = [
     icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
   },
   {
-    label: "Manage Task",
-    path: "/manage-tasks",
+    label: "Manage Tasks",
+    path: "/tasks/manage",
     roles: ["admin"] as Role[],
     icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" ry="1" /></svg>,
   },
@@ -75,7 +75,6 @@ const navItems = [
 
 export const SidebarNavigationSection: React.FC<{ userRole?: Role }> = ({ userRole }) => {
   const navigate = useNavigate();
-  // Start collapsed by default as shown in your layout
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleLogoutClick = () => {
@@ -83,7 +82,6 @@ export const SidebarNavigationSection: React.FC<{ userRole?: Role }> = ({ userRo
     navigate("/login");
   };
 
-  // Safely display items filtered by role matching if userRole property exists
   const visibleItems = userRole ? navItems.filter((item) => item.roles.includes(userRole)) : navItems;
 
   return (
@@ -98,14 +96,8 @@ export const SidebarNavigationSection: React.FC<{ userRole?: Role }> = ({ userRo
         }
       `}</style>
 
-      {/* This outer container has a constant layout width (78px). 
-        The main page content will align to this, ensuring it NEVER moves or layout-shifts.
-      */}
       <div className="w-[78px] h-screen flex-shrink-0 relative" />
 
-      {/* The actual interactive sidebar. It overlaps the page on top when expanded, 
-        using a drop-shadow effect to float clean above the active view.
-      */}
       <aside
         className="fixed top-0 left-0 h-screen bg-[#072821] flex flex-col z-50 transition-all duration-300 ease-in-out shadow-[4px_0_24px_rgba(0,0,0,0.25)]"
         style={{ 
@@ -114,7 +106,6 @@ export const SidebarNavigationSection: React.FC<{ userRole?: Role }> = ({ userRo
         }}
         aria-label="Sidebar navigation"
       >
-        {/* Header Container */}
         <div className="flex items-center justify-between py-6 px-4">
           <div className={`transition-all duration-300 overflow-hidden ${
             isExpanded ? "w-[120px] opacity-100" : "w-0 opacity-0"
@@ -147,7 +138,6 @@ export const SidebarNavigationSection: React.FC<{ userRole?: Role }> = ({ userRo
           </button>
         </div>
 
-        {/* Navigation list */}
         <nav className="flex-1 flex flex-col px-4 gap-1.5 overflow-y-auto no-scrollbar" aria-label="Main navigation">
           {visibleItems.map((item) => (
             <NavLink
@@ -179,7 +169,6 @@ export const SidebarNavigationSection: React.FC<{ userRole?: Role }> = ({ userRo
           ))}
         </nav>
 
-        {/* Log Out */}
         <div className="px-4 pb-8">
           <button
             type="button"

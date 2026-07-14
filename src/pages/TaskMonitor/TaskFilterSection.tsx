@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, Search, ChevronDown, Layers} from 'lucide-react';
 
 interface TaskFilterProps {
-  onAddTask: () => void;
+  onAddTask?: () => void; // Made optional to fix the TypeScript error
   onGenerate?: () => void;
   showAddButton?: boolean;
   showGenerateButton?: boolean;
@@ -14,7 +14,7 @@ interface TaskFilterProps {
   setAreaFilter: (val: string) => void;
   searchTerm: string;
   setSearchTerm: (val: string) => void;
-  hideStatus?: boolean; // Added this optional prop to fix the error
+  hideStatus?: boolean;
 }
 
 const TaskFilterSection: React.FC<TaskFilterProps> = ({ 
@@ -28,7 +28,7 @@ const TaskFilterSection: React.FC<TaskFilterProps> = ({
   setAreaFilter, 
   searchTerm, 
   setSearchTerm,
-  hideStatus = false, // Default to false
+  hideStatus = false,
   showAddButton = false,
   showGenerateButton = false
 }) => {
@@ -58,7 +58,7 @@ const TaskFilterSection: React.FC<TaskFilterProps> = ({
           />
         </div>
         
-        {showAddButton && (
+        {showAddButton && onAddTask && (
           <button
             onClick={onAddTask}
             className="bg-[#113129] text-white px-7 py-4 rounded-[16px] text-[15px] font-bold flex items-center gap-2 hover:bg-[#0a211b] transition-all shadow-sm active:scale-95 whitespace-nowrap"
@@ -68,8 +68,8 @@ const TaskFilterSection: React.FC<TaskFilterProps> = ({
           </button>
         )}
 
-        {/* Only shows in "Live Monitor" tab */}
-        {showGenerateButton && (
+        {/* Corrected: Label restored to "Initialize Today" */}
+        {showGenerateButton && onGenerate && (
           <button
             onClick={onGenerate}
             className="bg-[#d86125] text-[#FDFFE0] px-7 py-4 rounded-[16px] text-[15px] font-bold flex items-center gap-2 hover:transition-all shadow-sm active:scale-95 whitespace-nowrap cursor-pointer"
@@ -82,8 +82,6 @@ const TaskFilterSection: React.FC<TaskFilterProps> = ({
 
       {/* Secondary Filter Row: Status, Type, & Area */}
       <div className="flex flex-wrap items-center gap-6">
-        
-        {/* Status Group - Conditionally hidden for Admin "Manage" view */}
         {!hideStatus && (
           <>
             <div className="flex items-center gap-3">
@@ -108,7 +106,6 @@ const TaskFilterSection: React.FC<TaskFilterProps> = ({
           </>
         )}
 
-        {/* Type (Frequency) Group */}
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-bold uppercase text-[#94a3b8] tracking-widest">Type:</span>
           <div className="flex bg-[#f1f5f9] p-1 rounded-[12px] gap-1">
@@ -130,7 +127,6 @@ const TaskFilterSection: React.FC<TaskFilterProps> = ({
 
         <div className="h-6 w-px bg-gray-200" />
 
-        {/* Area Group */}
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-bold uppercase text-[#94a3b8] tracking-widest whitespace-nowrap">Area:</span>
           <div className="relative">

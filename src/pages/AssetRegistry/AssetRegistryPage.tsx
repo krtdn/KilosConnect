@@ -288,20 +288,21 @@ export const AssetRegistryPage = () => {
   const unclaimedLoF = items.filter(i => i.status === "Unclaimed").length;
   const claimedLoF = items.filter(i => i.status === "Claimed").length;
 
-  return (
-    <div className="flex min-h-screen bg-[#f8fafc] w-full relative">
+return (
+    <div className="flex min-h-screen bg-[#f8fafc]">
       <SidebarNavigationSection userRole={userRole} />
       
-      <div className="flex flex-col flex-1 min-w-0 pl-24 pr-8 py-8 overflow-y-auto h-full text-[#1f1f1f] w-full">
-        <div className="w-full mx-auto space-y-6">
+      {/* Updated wrapper to match Task Monitor: flex-1 fills screen, max-w centers content */}
+      <main className="flex-1 w-full overflow-hidden">
+        <div className="p-8 max-w-[1600px] mx-auto">
           
-          <div>
+          <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-[#0f2942]">Smart Facility Asset Registry</h1>
             <p className="text-gray-500 text-sm mt-1">Equipment lifecycle monitoring, predictive analytics, and lost-and-found management</p>
           </div>
 
           {/* Sub Navigation Tabs */}
-          <div className="flex border-b border-gray-200 gap-8 text-sm font-semibold">
+          <div className="flex border-b border-gray-200 gap-8 text-sm font-semibold mb-6">
             <button
               onClick={() => setActiveTab("Equipment")}
               className={`pb-3 transition-all ${
@@ -474,7 +475,7 @@ export const AssetRegistryPage = () => {
             </div>
           )}
         </div>
-      </div>
+      </main>
 
       {/* Equipment Overlays Modals */}
       <AddAssetModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onAdd={handleAddAsset} />
