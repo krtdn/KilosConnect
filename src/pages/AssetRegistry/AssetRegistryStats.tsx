@@ -41,3 +41,5 @@ export const AssetRegistryStats: React.FC<Props> = ({ assets }) => {
     </div>
   );
 };
+
+export default AssetRegistryStats;

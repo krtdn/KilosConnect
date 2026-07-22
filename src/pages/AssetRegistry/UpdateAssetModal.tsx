@@ -88,3 +88,5 @@ export const UpdateAssetModal: React.FC<Props> = ({ isOpen, onClose, asset, onUp
     </div>
   );
 };
+
+export default UpdateAssetModal;

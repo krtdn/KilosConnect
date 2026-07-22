@@ -124,3 +124,5 @@ export const AddAssetModal: React.FC<Props> = ({ isOpen, onClose, onAdd }) => {
     </div>
   );
 };
+
+export default AddAssetModal;

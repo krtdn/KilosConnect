@@ -3,16 +3,18 @@ import { SidebarNavigationSection } from '../../components/SidebarNavigationSect
 import TaskFilterSection from './TaskFilterSection';
 import TaskManagementSection from './TaskManagementSection';
 import AddTaskModal from './AddITaskModals';
+import TaskSetupTab from './TaskSetupTab';           // Integrated Basis Image component
+import ReviewSubmissionsTab from './ReviewSubmissionsTab'; // Integrated Review Submissions component
 import { useAuth } from '../../hooks/useAuth';
 import type { Task } from '../../types/task';
+import { ListTree, Upload, CheckCircle } from 'lucide-react';
 
-// --- MOCK DATA FOR GYM TASKS MATCHING YOUR TASK INTERFACE ---
 const MOCK_GYM_TASKS: Task[] = [
   {
     _id: '1',
     title: 'Sanitize Powerlifting Benches and Barbells',
     description: 'Wipe down all benches, racks, and knurling with disinfectant spray after peak hours.',
-    area: 'Powerlifting Zone',
+    area: 'Powerlifting Area',
     priority: 'High',
     frequency: 'Daily',
     dayType: 'Monday',
@@ -27,7 +29,7 @@ const MOCK_GYM_TASKS: Task[] = [
     _id: '2',
     title: 'Inspect CrossFit Rig Bolts and Pull-up Bars',
     description: 'Check structural stability and tightness of bolts across the main rig framework.',
-    area: 'CrossFit Zone',
+    area: 'CrossFit Area',
     priority: 'Medium',
     frequency: 'Weekly',
     dayType: 'Tuesday',
@@ -38,36 +40,6 @@ const MOCK_GYM_TASKS: Task[] = [
     createdAt: '2026-05-02T00:00:00.000Z',
     updatedAt: '2026-05-02T00:00:00.000Z',
   },
-  {
-    _id: '3',
-    title: 'Deep Clean Rubber Flooring in Open WOD Area',
-    description: 'Scrub rubber tiles using industrial floor cleaner to remove chalk buildup and sweat marks.',
-    area: 'Open WOD Area',
-    priority: 'High',
-    frequency: 'Weekly',
-    dayType: 'Wednesday',
-    startTime: '13:00',
-    endTime: '15:00',
-    isBreak: false,
-    isArchived: false,
-    createdAt: '2026-05-03T00:00:00.000Z',
-    updatedAt: '2026-05-03T00:00:00.000Z',
-  },
-  {
-    _id: '4',
-    title: 'Calibrate and Clean Treadmill Displays',
-    description: 'Wipe console screens with safe microfiber cloths and check emergency stop magnetic keys.',
-    area: 'Cardio Deck',
-    priority: 'Low',
-    frequency: 'Daily',
-    dayType: 'Thursday',
-    startTime: '07:00',
-    endTime: '08:00',
-    isBreak: false,
-    isArchived: false,
-    createdAt: '2026-05-04T00:00:00.000Z',
-    updatedAt: '2026-05-04T00:00:00.000Z',
-  },
 ];
 
 export const TaskManagementPage: React.FC = () => {
@@ -75,17 +47,20 @@ export const TaskManagementPage: React.FC = () => {
   const [loading] = useState(false);
   const { role } = useAuth();
   
+  const [activeTab, setActiveTab] = useState<'tasks' | 'uploadBasis' | 'reviewSubmission'>('tasks');
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState('All');
   const [areaFilter, setAreaFilter] = useState('All Areas');
 
-  // --- QR CODE & CHECKLIST MODAL STATES ---
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [selectedTaskForQR, setSelectedTaskForQR] = useState<Task | null>(null);
   
-  // Checklist items list without checkboxes
+  // Shared state for basis images across tabs if needed
+  const [basisImages, setBasisImages] = useState<Record<string, any>>({});
+
   const checklistItems = [
     { id: 1, text: 'Check cable machine tension and alignment' },
     { id: 2, text: 'Inspect weight stack pins for damage' },
@@ -100,16 +75,13 @@ export const TaskManagementPage: React.FC = () => {
     return matchesFrequency && matchesArea && matchesSearch;
   });
 
-  // Handler when clicking any task item in the list
   const handleTaskClick = (task: Task) => {
     setSelectedTaskForQR(task);
     setIsQRModalOpen(true);
   };
 
-  // Handler to download the mock QR code image for the location area
   const handleDownloadQR = () => {
     if (!selectedTaskForQR) return;
-    
     const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24"><rect width="24" height="24" fill="#fff"/><text x="2" y="12" font-size="3" fill="#000">QR: ${selectedTaskForQR.area}</text></svg>`;
     const blob = new Blob([svgString], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
@@ -127,47 +99,98 @@ export const TaskManagementPage: React.FC = () => {
       <SidebarNavigationSection userRole={(role ?? 'custodian') as 'admin' | 'custodian'} />
       <main className="flex-1 w-full overflow-hidden">
         <div className="p-8 max-w-[1600px] mx-auto space-y-8">
-          <h1 className="text-3xl font-bold text-gray-900">Manage Tasks</h1>
           
-          <TaskFilterSection 
-            onAddTask={() => setIsModalOpen(true)}
-            showAddButton={true}
-            hideStatus={true}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            frequencyFilter={frequencyFilter}
-            setFrequencyFilter={setFrequencyFilter}
-            areaFilter={areaFilter}
-            setAreaFilter={setAreaFilter}
-            statusFilter="" 
-            setStatusFilter={() => {}}
-          />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Task Management</h1>
+              <p className="text-sm text-gray-500 mt-1">Manage master configurations, reference images, and submission reviews.</p>
+            </div>
 
-          {/* Interactive clickable wrapper for the existing task section */}
-          <div 
-            onClick={(e) => {
-              const rowElement = (e.target as HTMLElement).closest('tr, [class*="task"], [class*="flex"]');
-              if (rowElement) {
-                const matchedTask = filteredTasks.find(t => 
-                  rowElement.textContent?.includes(t.title) || rowElement.textContent?.includes(t.area)
-                );
-                if (matchedTask) {
-                  handleTaskClick(matchedTask);
-                }
-              }
-            }}
-            className="cursor-pointer [&_*]:cursor-pointer"
-          >
-            <TaskManagementSection 
-              tasks={filteredTasks} 
-              onArchive={(id) => setTasks(prev => prev.filter(t => t._id !== id))} 
-              loading={loading} 
-              onEdit={(t) => { setEditingTask(t); setIsModalOpen(true); }} 
-            />
+            <div className="flex bg-gray-200/70 p-1.5 rounded-2xl gap-1">
+              <button
+                onClick={() => setActiveTab('tasks')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  activeTab === 'tasks' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <ListTree size={18} />
+                <span>Master Tasks</span>
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('uploadBasis')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  activeTab === 'uploadBasis' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Upload size={18} />
+                <span>Upload Basis Image</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('reviewSubmission')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  activeTab === 'reviewSubmission' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <CheckCircle size={18} />
+                <span>Review Submission</span>
+              </button>
+            </div>
           </div>
+
+          {/* TAB CONTENT 1: MASTER TASKS */}
+          {activeTab === 'tasks' && (
+            <div className="space-y-8">
+              <TaskFilterSection 
+                onAddTask={() => setIsModalOpen(true)}
+                showAddButton={true}
+                hideStatus={true}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                frequencyFilter={frequencyFilter}
+                setFrequencyFilter={setFrequencyFilter}
+                areaFilter={areaFilter}
+                setAreaFilter={setAreaFilter}
+                statusFilter="" 
+                setStatusFilter={() => {}}
+              />
+
+              <div 
+                onClick={(e) => {
+                  const rowElement = (e.target as HTMLElement).closest('tr, [class*="task"], [class*="flex"]');
+                  if (rowElement) {
+                    const matchedTask = filteredTasks.find(t => 
+                      rowElement.textContent?.includes(t.title) || rowElement.textContent?.includes(t.area)
+                    );
+                    if (matchedTask) {
+                      handleTaskClick(matchedTask);
+                    }
+                  }
+                }}
+                className="cursor-pointer [&_*]:cursor-pointer"
+              >
+                <TaskManagementSection 
+                  tasks={filteredTasks} 
+                  onArchive={(id) => setTasks(prev => prev.filter(t => t._id !== id))} 
+                  loading={loading} 
+                  onEdit={(t) => { setEditingTask(t); setIsModalOpen(true); }} 
+                />
+              </div>
+            </div>
+          )}
+
+          {/* TAB CONTENT 2: UPLOAD BASIS IMAGE PAGE */}
+          {activeTab === 'uploadBasis' && (
+            <TaskSetupTab />
+          )}
+
+          {/* TAB CONTENT 3: REVIEW SUBMISSION PAGE */}
+          {activeTab === 'reviewSubmission' && (
+            <ReviewSubmissionsTab basisImages={basisImages} />
+          )}
         </div>
 
-        {/* Add/Edit Task Modal */}
         <AddTaskModal 
           isOpen={isModalOpen} 
           onClose={() => { setEditingTask(null); setIsModalOpen(false); }} 
@@ -198,7 +221,6 @@ export const TaskManagementPage: React.FC = () => {
           initialData={editingTask}
         />
 
-        {/* --- TASK CHECKLIST DETAILS & QR CODE MODAL WITH DOWNLOAD BUTTON --- */}
         {isQRModalOpen && selectedTaskForQR && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div className="bg-white rounded-2xl max-w-xl w-full p-6 space-y-6 shadow-xl transform transition-all max-h-[90vh] overflow-y-auto">
@@ -215,25 +237,18 @@ export const TaskManagementPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Task Checklist Details Section (Text list only, no checkboxes) */}
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Task Checklist Details</h4>
                 <div className="space-y-2">
                   {checklistItems.map((item) => (
-                    <div 
-                      key={item.id} 
-                      className="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-center space-x-3"
-                    >
+                    <div key={item.id} className="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-center space-x-3">
                       <span className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></span>
-                      <span className="text-sm font-medium text-gray-800">
-                        {item.text}
-                      </span>
+                      <span className="text-sm font-medium text-gray-800">{item.text}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* QR Code Section */}
               <div className="flex flex-col items-center justify-center space-y-3 py-2 border-t pt-4">
                 <div className="w-32 h-32 border-4 border-gray-900 rounded-xl flex items-center justify-center bg-white p-2 shadow-inner">
                   <div className="text-center space-y-1">
@@ -250,7 +265,6 @@ export const TaskManagementPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex space-x-3 pt-2">
                 <button
                   type="button"
@@ -264,9 +278,6 @@ export const TaskManagementPage: React.FC = () => {
                   onClick={handleDownloadQR}
                   className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 shadow-sm transition-colors flex items-center justify-center space-x-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
                   <span>Download QR</span>
                 </button>
               </div>
@@ -277,3 +288,4 @@ export const TaskManagementPage: React.FC = () => {
     </div>
   );
 };
+export default TaskManagementPage;

@@ -47,3 +47,5 @@ export const ArchiveConfirmModal: React.FC<Props> = ({ isOpen, onClose, onConfir
     </div>
   );
 };
+
+export default ArchiveConfirmModal;
