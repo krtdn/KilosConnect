@@ -5,6 +5,7 @@ interface BottomNavProps {
   onHomeClick: () => void;
   onScanClick: () => void;
   onReportClick: () => void;
+  onLostClick?: () => void;
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({
@@ -12,6 +13,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
   onHomeClick,
   onScanClick,
   onReportClick,
+  onLostClick,
 }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-8 flex justify-around items-center z-50">
